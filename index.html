@@ -1,0 +1,1678 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🌿 Claude Code 学习计划 🌿</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #fff0f5 0%, #ffe4e8 50%, #ffd9e3 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+        }
+        header {
+            flex-shrink: 0;
+            text-align: center;
+            padding: 25px 30px;
+            background: white;
+            border-radius: 25px;
+            box-shadow: 0 10px 40px rgba(100, 200, 120, 0.15);
+            margin-bottom: 20px;
+            border: 4px solid #a8e6b8;
+        }
+        h1 { font-size: 2rem; color: #5cb85c; margin-bottom: 8px; }
+        .subtitle { font-size: 1rem; color: #7dd87d; }
+
+        /* 搜索结果 */
+        .search-results {
+            margin-top: 15px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .search-result-item {
+            padding: 12px 20px;
+            cursor: pointer;
+            border-bottom: 1px solid #e8f8ed;
+            transition: background 0.2s ease;
+        }
+        .search-result-item:hover {
+            background: #f0fff4;
+        }
+        .search-result-item:last-child {
+            border-bottom: none;
+        }
+        .search-result-title {
+            font-weight: bold;
+            color: #5cb85c;
+            margin-bottom: 4px;
+        }
+        .search-result-match {
+            background: #fff59d;
+            padding: 1px 4px;
+            border-radius: 3px;
+        }
+        .search-result-lesson {
+            font-size: 0.85rem;
+            color: #7dd87d;
+        }
+        .search-no-results {
+            padding: 20px;
+            text-align: center;
+            color: #999;
+        }
+        .search-loading {
+            padding: 20px;
+            text-align: center;
+            color: #7dd87d;
+        }
+
+        .progress-container {
+            background: #f0fff4;
+            border-radius: 15px;
+            padding: 15px;
+            margin: 15px 0 0;
+            border: 3px solid #a8e6b8;
+        }
+        .progress-bar-bg {
+            background: #d4f5dc;
+            height: 35px;
+            border-radius: 15px;
+            overflow: hidden;
+        }
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #90ee90, #7dd87d);
+            border-radius: 15px;
+            transition: width 0.5s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+        #progressText {
+            text-align: center;
+            margin-top: 8px;
+            color: #5cb85c;
+            font-weight: bold;
+            font-size: 0.9rem;
+        }
+
+        /* 总学习时间 */
+        .total-time {
+            text-align: center;
+            margin-top: 8px;
+            color: #7dd87d;
+            font-size: 0.85rem;
+        }
+        .total-time-value {
+            font-weight: bold;
+            color: #5cb85c;
+        }
+
+        /* 两栏布局 */
+        .main-content {
+            display: flex;
+            gap: 20px;
+        }
+
+        /* 左侧边栏 - 课程概览 */
+        .sidebar {
+            width: 400px;
+            flex-shrink: 0;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 8px 30px rgba(100, 200, 120, 0.12);
+            border: 4px solid #a8e6b8;
+            display: flex;
+            flex-direction: column;
+            position: sticky;
+            top: 20px;
+            align-self: flex-start;
+            max-height: calc(100vh - 40px);
+        }
+        .sidebar-header {
+            padding: 20px;
+            background: linear-gradient(135deg, #c8f7dc, #b0f0c8);
+            color: #2d7a3e;
+            text-align: center;
+            font-size: 1.3rem;
+            font-weight: bold;
+        }
+        .sidebar-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 15px;
+        }
+        .sidebar-content::-webkit-scrollbar { width: 8px; }
+        .sidebar-content::-webkit-scrollbar-track { background: #f0fff4; border-radius: 10px; }
+        .sidebar-content::-webkit-scrollbar-thumb { background: #a8e6b8; border-radius: 10px; }
+
+        .day-section { margin-bottom: 15px; }
+        .day-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px;
+            background: #f0fff4;
+            border-radius: 12px;
+            margin-bottom: 10px;
+            border: 2px solid #b8f5cc;
+        }
+        .day-emoji { font-size: 1.8rem; }
+        .day-title { font-size: 1.1rem; font-weight: bold; color: #5cb85c; }
+
+        .lesson-item {
+            background: #fafdfb;
+            border-radius: 12px;
+            margin-bottom: 8px;
+            border: 2px solid #e8f8ed;
+            transition: all 0.3s ease;
+        }
+        .lesson-item:hover { border-color: #c8f7dc; }
+        .lesson-item.active {
+            background: linear-gradient(135deg, #b8f5cc, #98f0b8);
+            border-color: #7dd87d;
+        }
+        .lesson-item.active .lesson-title,
+        .lesson-item.active .lesson-emoji { color: #2d7a3e; }
+        .lesson-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px;
+            cursor: pointer;
+        }
+        .lesson-emoji { font-size: 1.5rem; }
+        .lesson-title {
+            font-size: 0.95rem;
+            font-weight: bold;
+            color: #5cb85c;
+            flex: 1;
+        }
+        .lesson-actions {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+        .study-time {
+            font-size: 0.75rem;
+            color: #999;
+            padding: 2px 6px;
+            background: #f5f5f5;
+            border-radius: 8px;
+        }
+        .complete-btn {
+            background: linear-gradient(135deg, #c8f7dc, #b0f0c8);
+            border: 2px solid #a8e6b8;
+            border-radius: 50%;
+            width: 32px;
+            height: 32px;
+            font-size: 1.2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            flex-shrink: 0;
+            color: #5cb85c;
+            pointer-events: none;
+        }
+        .complete-btn.completed {
+            background: linear-gradient(135deg, #90ee90, #7dd87d);
+            color: white;
+            border-color: #7dd87d;
+        }
+
+        /* 右侧 - 内容区域 */
+        .content-area {
+            flex: 1;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 8px 30px rgba(100, 200, 120, 0.12);
+            border: 4px solid #a8e6b8;
+            display: flex;
+            flex-direction: column;
+        }
+        .content-header {
+            padding: 20px 25px;
+            background: linear-gradient(135deg, #c8f7dc, #b0f0c8);
+            color: #2d7a3e;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 15px;
+        }
+        .content-left {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        .content-emoji { font-size: 2.5rem; }
+        .content-title { font-size: 1.5rem; font-weight: bold; }
+        .mark-complete-btn {
+            background: white;
+            color: #5cb85c;
+            border: 2px solid #a8e6b8;
+            padding: 12px 25px;
+            border-radius: 20px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .mark-complete-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 15px rgba(120, 220, 140, 0.3);
+            background: #f0fff4;
+        }
+        .mark-complete-btn.completed {
+            background: linear-gradient(135deg, #90ee90, #7dd87d);
+            color: white;
+            border-color: #7dd87d;
+        }
+
+        /* 计时控制按钮 */
+        .timer-controls {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+        .timer-btn {
+            background: white;
+            color: #5cb85c;
+            border: 2px solid #a8e6b8;
+            padding: 8px 16px;
+            border-radius: 15px;
+            font-size: 0.85rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .timer-btn:hover {
+            background: #f0fff4;
+            transform: scale(1.05);
+        }
+        .timer-btn.active {
+            background: linear-gradient(135deg, #90ee90, #7dd87d);
+            color: white;
+            border-color: #7dd87d;
+        }
+        .timer-status {
+            font-size: 0.85rem;
+            color: #7dd87d;
+            padding: 4px 10px;
+            background: #f0fff4;
+            border-radius: 10px;
+        }
+
+        .content-body {
+            flex: 1;
+            overflow-y: auto;
+            padding: 25px;
+            line-height: 1.8;
+        }
+        .content-body::-webkit-scrollbar { width: 10px; }
+        .content-body::-webkit-scrollbar-track { background: #f0fff4; border-radius: 10px; }
+        .content-body::-webkit-scrollbar-thumb { background: #a8e6b8; border-radius: 10px; }
+
+        /* 内容样式 */
+        .content-body h1 { color: #5cb85c; font-size: 1.8rem; margin: 20px 0 15px; }
+        .content-body h2 { color: #5cb85c; font-size: 1.5rem; margin: 18px 0 12px; }
+        .content-body h3 { color: #7dd87d; font-size: 1.2rem; margin: 15px 0 10px; }
+        .content-body h4 { color: #7dd87d; font-size: 1.1rem; margin: 12px 0 8px; }
+        .content-body code {
+            background: #f0fff4;
+            padding: 2px 8px;
+            border-radius: 5px;
+            color: #5cb85c;
+            font-family: 'Consolas', 'Monaco', monospace;
+        }
+        .content-body pre {
+            background: #2a3a2a;
+            padding: 20px;
+            border-radius: 12px;
+            overflow-x: auto;
+            margin: 15px 0;
+            border: 2px solid #a8e6b8;
+        }
+        .content-body pre code {
+            background: transparent;
+            color: #f8f8f2;
+            padding: 0;
+            font-size: 0.95rem;
+        }
+        .content-body p { margin-bottom: 15px; color: #333; }
+        .content-body ul, .content-body ol { margin: 15px 0 15px 25px; }
+        .content-body li { margin-bottom: 8px; }
+        .content-body strong { color: #5cb85c; }
+        .content-body blockquote {
+            border-left: 4px solid #a8e6b8;
+            padding-left: 20px;
+            margin: 15px 0;
+            color: #666;
+            font-style: italic;
+        }
+
+        /* 搜索高亮 */
+        .search-highlight {
+            background: #fff59d;
+            padding: 2px 4px;
+            border-radius: 3px;
+        }
+
+        /* 空状态 */
+        .empty-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            color: #7dd87d;
+        }
+        .empty-state-emoji { font-size: 5rem; margin-bottom: 20px; }
+        .empty-state-text { font-size: 1.3rem; }
+
+        /* 加载动画 */
+        .loading {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            color: #7dd87d;
+            font-size: 1.2rem;
+        }
+
+        /* 课程内目录 */
+        .toc-panel {
+            position: fixed;
+            right: -350px;
+            top: 0;
+            width: 320px;
+            height: 100vh;
+            background: white;
+            box-shadow: -5px 0 30px rgba(0, 0, 0, 0.15);
+            border-left: 4px solid #a8e6b8;
+            transition: right 0.3s ease;
+            z-index: 200;
+            display: flex;
+            flex-direction: column;
+        }
+        .toc-panel.show { right: 0; }
+        .toc-header {
+            padding: 20px;
+            background: linear-gradient(135deg, #c8f7dc, #b0f0c8);
+            color: #2d7a3e;
+            font-weight: bold;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .toc-close {
+            cursor: pointer;
+            font-size: 1.2rem;
+            opacity: 0.7;
+            transition: opacity 0.2s;
+        }
+        .toc-close:hover { opacity: 1; }
+        .toc-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 10px 0;
+        }
+        .toc-content::-webkit-scrollbar { width: 6px; }
+        .toc-content::-webkit-scrollbar-track { background: #f0fff4; }
+        .toc-content::-webkit-scrollbar-thumb { background: #a8e6b8; border-radius: 10px; }
+        .toc-item {
+            padding: 8px 15px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border-left: 3px solid transparent;
+        }
+        .toc-item:hover {
+            background: #f0fff4;
+            border-left-color: #7dd87d;
+        }
+        .toc-item.active {
+            background: #f0fff4;
+            border-left-color: #5cb85c;
+            color: #5cb85c;
+            font-weight: bold;
+        }
+        .toc-level-1 { padding-left: 15px; font-size: 0.9rem; }
+        .toc-level-2 { padding-left: 30px; font-size: 0.85rem; }
+        .toc-level-3 { padding-left: 45px; font-size: 0.8rem; }
+
+        /* 目录按钮 */
+        .toc-toggle-btn {
+            position: fixed;
+            right: 0;
+            top: 220px;
+            width: 50px;
+            height: 50px;
+            border-radius: 12px 0 0 12px;
+            background: linear-gradient(135deg, #c8f7dc, #b0f0c8);
+            border: 2px solid #a8e6b8;
+            border-right: none;
+            color: #2d7a3e;
+            font-size: 1.5rem;
+            cursor: pointer;
+            box-shadow: -4px 4px 15px rgba(0, 0, 0, 0.15);
+            z-index: 200;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+        .toc-toggle-btn:hover {
+            transform: scale(1.05);
+            width: 55px;
+        }
+        .toc-toggle-btn.active {
+            right: 320px;
+            background: linear-gradient(135deg, #90ee90, #7dd87d);
+        }
+        .toc-toggle-btn.hidden {
+            display: none;
+        }
+
+        /* 笔记面板 */
+        .notes-panel {
+            position: fixed;
+            right: -350px;
+            top: 0;
+            width: 320px;
+            height: 100vh;
+            background: white;
+            box-shadow: -5px 0 30px rgba(0, 0, 0, 0.15);
+            border-left: 4px solid #a8e6b8;
+            transition: right 0.3s ease;
+            z-index: 200;
+            display: flex;
+            flex-direction: column;
+        }
+        .notes-panel.show {
+            right: 0;
+        }
+        .notes-header {
+            padding: 20px;
+            background: linear-gradient(135deg, #c8f7dc, #b0f0c8);
+            color: #2d7a3e;
+            font-weight: bold;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .notes-close {
+            cursor: pointer;
+            font-size: 1.2rem;
+            opacity: 0.7;
+            transition: opacity 0.2s;
+        }
+        .notes-close:hover { opacity: 1; }
+        .notes-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 15px;
+        }
+        .notes-content::-webkit-scrollbar { width: 8px; }
+        .notes-content::-webkit-scrollbar-track { background: #f0fff4; }
+        .notes-content::-webkit-scrollbar-thumb { background: #a8e6b8; border-radius: 10px; }
+
+        /* 笔记项 */
+        .note-item {
+            background: #f9fdf9;
+            border: 2px solid #e8f8ed;
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 12px;
+        }
+        .note-meta {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 0.8rem;
+            color: #999;
+        }
+        .note-text {
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            color: #333;
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+        .note-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 10px;
+        }
+        .note-btn {
+            flex: 1;
+            padding: 6px 12px;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .note-btn-edit {
+            background: #c8f7dc;
+            color: #2d7a3e;
+        }
+        .note-btn-edit:hover {
+            background: #b8f5cc;
+        }
+        .note-btn-delete {
+            background: #ffcccc;
+            color: #cc0000;
+        }
+        .note-btn-delete:hover {
+            background: #ffaaaa;
+        }
+
+        /* 添加笔记表单 */
+        .note-form {
+            background: #f0fff4;
+            border: 2px solid #a8e6b8;
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+        .note-textarea {
+            width: 100%;
+            min-height: 100px;
+            padding: 10px;
+            border: 2px solid #c8f7dc;
+            border-radius: 8px;
+            font-family: inherit;
+            font-size: 0.9rem;
+            resize: vertical;
+            outline: none;
+        }
+        .note-textarea:focus {
+            border-color: #7dd87d;
+        }
+        .note-form-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        .note-btn-save {
+            background: linear-gradient(135deg, #90ee90, #7dd87d);
+            color: white;
+            border: none;
+            padding: 8px 20px;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            flex: 1;
+        }
+        .note-btn-save:hover {
+            transform: scale(1.02);
+        }
+        .note-btn-cancel {
+            background: #ddd;
+            color: #666;
+            border: none;
+            padding: 8px 20px;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            cursor: pointer;
+        }
+
+        /* 笔记切换按钮 */
+        .notes-toggle-btn {
+            position: fixed;
+            right: 0;
+            top: 150px;
+            width: 50px;
+            height: 50px;
+            border-radius: 12px 0 0 12px;
+            background: linear-gradient(135deg, #c8f7dc, #b0f0c8);
+            border: 2px solid #a8e6b8;
+            border-right: none;
+            color: #2d7a3e;
+            font-size: 1.5rem;
+            cursor: pointer;
+            box-shadow: -4px 4px 15px rgba(0, 0, 0, 0.15);
+            z-index: 200;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+        .notes-toggle-btn:hover {
+            transform: scale(1.05);
+            width: 55px;
+        }
+        .notes-toggle-btn.active {
+            right: 320px;
+            background: linear-gradient(135deg, #90ee90, #7dd87d);
+        }
+
+        /* 搜索面板 */
+        .search-panel {
+            position: fixed;
+            right: -350px;
+            top: 0;
+            width: 320px;
+            height: 100vh;
+            background: white;
+            box-shadow: -5px 0 30px rgba(0, 0, 0, 0.15);
+            border-left: 4px solid #a8e6b8;
+            transition: right 0.3s ease;
+            z-index: 200;
+            display: flex;
+            flex-direction: column;
+        }
+        .search-panel.show {
+            right: 0;
+        }
+        .search-header {
+            padding: 20px;
+            background: linear-gradient(135deg, #c8f7dc, #b0f0c8);
+            color: #2d7a3e;
+            font-weight: bold;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .search-close {
+            cursor: pointer;
+            font-size: 1.2rem;
+            opacity: 0.7;
+            transition: opacity 0.2s;
+        }
+        .search-close:hover { opacity: 1; }
+        .search-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 15px;
+        }
+        .search-content::-webkit-scrollbar { width: 8px; }
+        .search-content::-webkit-scrollbar-track { background: #f0fff4; }
+        .search-content::-webkit-scrollbar-thumb { background: #a8e6b8; border-radius: 10px; }
+
+        /* 搜索输入框 */
+        .search-input-wrapper {
+            position: relative;
+            margin-bottom: 10px;
+        }
+        .search-input {
+            width: 100%;
+            padding: 12px 45px 12px 20px;
+            border: 2px solid #a8e6b8;
+            border-radius: 25px;
+            font-size: 1rem;
+            background: #f0fff4;
+            color: #2d7a3e;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+        .search-input:focus {
+            border-color: #7dd87d;
+            box-shadow: 0 0 0 3px rgba(120, 216, 125, 0.2);
+            background: white;
+        }
+        .search-input::placeholder {
+            color: #7dd87d;
+        }
+        .search-input-wrapper .search-shortcut {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: #d4f5dc;
+            color: #5cb85c;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: bold;
+            pointer-events: none;
+        }
+
+        /* 搜索切换按钮 */
+        .search-toggle-btn {
+            position: fixed;
+            right: 0;
+            top: 80px;
+            width: 50px;
+            height: 50px;
+            border-radius: 12px 0 0 12px;
+            background: linear-gradient(135deg, #c8f7dc, #b0f0c8);
+            border: 2px solid #a8e6b8;
+            border-right: none;
+            color: #2d7a3e;
+            font-size: 1.5rem;
+            cursor: pointer;
+            box-shadow: -4px 4px 15px rgba(0, 0, 0, 0.15);
+            z-index: 200;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+        .search-toggle-btn:hover {
+            transform: scale(1.05);
+            width: 55px;
+        }
+        .search-toggle-btn.active {
+            right: 320px;
+            background: linear-gradient(135deg, #90ee90, #7dd87d);
+        }
+
+        /* 无笔记提示 */
+        .no-notes {
+            text-align: center;
+            padding: 40px 20px;
+            color: #999;
+        }
+        .no-notes-icon {
+            font-size: 3rem;
+            margin-bottom: 10px;
+        }
+
+        /* 响应式 */
+        @media (max-width: 1000px) {
+            .main-content { flex-direction: column; }
+            .sidebar { width: 100%; }
+        }
+        @media (max-width: 1400px) {
+            .toc-panel { width: 280px; right: -280px; }
+            .toc-toggle-btn.active { right: 280px; }
+            .notes-panel { width: 280px; right: -280px; }
+            .notes-toggle-btn.active { right: 280px; }
+            .search-panel { width: 280px; right: -280px; }
+            .search-toggle-btn.active { right: 280px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🌿 Claude Code 学习计划 🌿</h1>
+            <p class="subtitle">✨ 一起学习，一起进步！✨</p>
+
+            <div class="progress-container">
+                <div class="progress-bar-bg">
+                    <div class="progress-bar" id="progressBar">0%</div>
+                </div>
+                <p id="progressText">加油！开始你的学习之旅吧~ 💪</p>
+                <div class="total-time">⏱️ 总学习时间: <span class="total-time-value" id="totalTime">0小时0分钟</span></div>
+            </div>
+        </header>
+
+        <div class="main-content">
+            <!-- 左侧：课程概览 -->
+            <div class="sidebar">
+                <div class="sidebar-header">📚 课程目录</div>
+                <div class="sidebar-content">
+                    <div id="lessonList"></div>
+                </div>
+            </div>
+
+            <!-- 右侧：课程内容 -->
+            <div class="content-area">
+                <div class="content-header" id="contentHeader">
+                    <div class="content-left">
+                        <span class="content-emoji">👈</span>
+                        <span class="content-title">请选择左侧课程开始学习</span>
+                    </div>
+                </div>
+                <div class="content-body" id="contentBody">
+                    <div class="empty-state">
+                        <div class="empty-state-emoji">📖</div>
+                        <div class="empty-state-text">点击左侧课程查看详细内容</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 搜索按钮 -->
+        <button class="search-toggle-btn" id="searchToggleBtn" onclick="toggleSearch()" title="搜索">🔍</button>
+
+        <!-- 笔记按钮 -->
+        <button class="notes-toggle-btn" id="notesToggleBtn" onclick="toggleNotes()" title="学习笔记">📝</button>
+
+        <!-- 目录按钮 -->
+        <button class="toc-toggle-btn" id="tocToggleBtn" onclick="toggleTOC()" title="目录">📑</button>
+
+        <!-- 目录面板 -->
+        <div class="toc-panel" id="tocPanel">
+            <div class="toc-header">
+                <span>📑 目录</span>
+                <span class="toc-close" onclick="toggleTOC()">✕</span>
+            </div>
+            <div class="toc-content" id="tocContent">
+                <div style="padding: 15px; text-align: center; color: #999;">暂无目录</div>
+            </div>
+        </div>
+
+        <!-- 笔记面板 -->
+        <div class="notes-panel" id="notesPanel">
+            <div class="notes-header">
+                <span>📝 学习笔记</span>
+                <span class="notes-close" onclick="toggleNotes()">✕</span>
+            </div>
+            <div class="notes-content" id="notesContent">
+                <div class="no-notes">
+                    <div class="no-notes-icon">📝</div>
+                    <div>还没有笔记哦~</div>
+                    <div style="font-size: 0.85rem; margin-top: 10px;">选择课程后添加笔记</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 搜索面板 -->
+        <div class="search-panel" id="searchPanel">
+            <div class="search-header">
+                <span>🔍 搜索课程</span>
+                <span class="search-close" onclick="toggleSearch()">✕</span>
+            </div>
+            <div class="search-content">
+                <div class="search-input-wrapper">
+                    <input type="text" class="search-input" id="searchInput" placeholder="搜索课程内容..." autocomplete="off">
+                    <span class="search-shortcut">Ctrl+K</span>
+                </div>
+                <div class="search-results" id="searchResults"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const lessons = [
+            { id: '1-1', file: 'day1/morning/01-setup.md', emoji: '⚙️', title: '01. 环境安装与配置' },
+            { id: '1-2', file: 'day1/morning/02-basics.md', emoji: '📖', title: '02. 基础对话与文件操作' },
+            { id: '1-3', file: 'day1/morning/03-editing.md', emoji: '✏️', title: '03. 代码编辑基础' },
+            { id: '1-4', file: 'day1/afternoon/04-bash.md', emoji: '💻', title: '04. Bash 工具与命令执行' },
+            { id: '1-5', file: 'day1/afternoon/05-generation.md', emoji: '🤖', title: '05. 智能代码生成与重构' },
+            { id: '1-6', file: 'day1/afternoon/06-debugging.md', emoji: '🐛', title: '06. 调试与问题解决' },
+            { id: '2-1', file: 'day2/morning/07-multifile.md', emoji: '🌳', title: '07. 多文件操作与项目管理' },
+            { id: '2-2', file: 'day2/morning/08-task-tool.md', emoji: '🎯', title: '08. Task 工具与代理系统' },
+            { id: '2-3', file: 'day2/morning/09-mcp.md', emoji: '🔌', title: '09. MCP 服务器与扩展功能' },
+            { id: '2-4', file: 'day2/afternoon/10-skills.md', emoji: '⭐', title: '10. 技能与自定义命令' },
+            { id: '2-5', file: 'day2/afternoon/11-plan-mode.md', emoji: '📋', title: '11. Plan 模式与复杂任务' },
+            { id: '2-6', file: 'day2/afternoon/12-project.md', emoji: '🏆', title: '12. 综合实战项目' }
+        ];
+
+        let currentLesson = null;
+        let loadedLessons = new Set();
+        let completedLessons = new Set();
+        let lessonContents = {}; // 缓存课程内容用于搜索
+        let searchTimeout = null;
+        let studyTimes = {}; // 每个课程的学习时长（秒）
+        let studyStartTime = null; // 当前学习开始时间
+        let totalTimeSpent = 0; // 总学习时间（秒）
+        let notes = {}; // 课程笔记 {lessonId: [{id, text, timestamp}]}
+        let editingNoteId = null; // 正在编辑的笔记ID
+
+        // 从 localStorage 加载完成状态
+        function loadCompletedState() {
+            const saved = localStorage.getItem('completedLessons');
+            if (saved) {
+                completedLessons = new Set(JSON.parse(saved));
+            }
+            updateProgress();
+
+            // 加载学习时间
+            const savedTimes = localStorage.getItem('studyTimes');
+            if (savedTimes) {
+                studyTimes = JSON.parse(savedTimes);
+                totalTimeSpent = Object.values(studyTimes).reduce((a, b) => a + b, 0);
+            }
+            updateTotalTime();
+
+            // 加载笔记
+            loadNotes();
+        }
+
+        // 格式化时间显示
+        function formatTime(seconds) {
+            const hours = Math.floor(seconds / 3600);
+            const minutes = Math.floor((seconds % 3600) / 60);
+            if (hours > 0) {
+                return `${hours}小时${minutes}分钟`;
+            }
+            return `${minutes}分钟`;
+        }
+
+        // 更新总学习时间显示
+        function updateTotalTime() {
+            document.getElementById('totalTime').textContent = formatTime(totalTimeSpent);
+        }
+
+        // 加载笔记
+        function loadNotes() {
+            const saved = localStorage.getItem('studyNotes');
+            if (saved) {
+                notes = JSON.parse(saved);
+            }
+        }
+
+        // 保存笔记
+        function saveNotes() {
+            localStorage.setItem('studyNotes', JSON.stringify(notes));
+        }
+
+        // 切换笔记面板显示
+        function toggleNotes() {
+            const panel = document.getElementById('notesPanel');
+            const btn = document.getElementById('notesToggleBtn');
+            panel.classList.toggle('show');
+            btn.classList.toggle('active');
+            renderNotes();
+        }
+
+        // 切换搜索面板显示
+        function toggleSearch() {
+            const panel = document.getElementById('searchPanel');
+            const btn = document.getElementById('searchToggleBtn');
+            panel.classList.toggle('show');
+            btn.classList.toggle('active');
+            if (panel.classList.contains('show')) {
+                document.getElementById('searchInput').focus();
+            }
+        }
+
+        // 渲染笔记列表
+        function renderNotes() {
+            const notesContent = document.getElementById('notesContent');
+            const lessonNotes = notes[currentLesson] || [];
+
+            let html = '';
+            if (lessonNotes.length === 0) {
+                html += `
+                    <div class="no-notes">
+                        <div class="no-notes-icon">📝</div>
+                        <div>还没有笔记哦~</div>
+                        <div style="font-size: 0.85rem; margin-top: 10px;">在下方添加笔记</div>
+                    </div>
+                `;
+            } else {
+                html += lessonNotes.map(note => `
+                    <div class="note-item">
+                        <div class="note-meta">
+                            <span>📅 ${new Date(note.timestamp).toLocaleString('zh-CN')}</span>
+                        </div>
+                        <div class="note-text">${note.text}</div>
+                        <div class="note-actions">
+                            <button class="note-btn note-btn-edit" onclick="editNote('${note.id}')">✏️ 编辑</button>
+                            <button class="note-btn note-btn-delete" onclick="deleteNote('${note.id}')">🗑️ 删除</button>
+                        </div>
+                    </div>
+                `).join('');
+            }
+
+            // 始终显示添加笔记表单
+            html += `
+                <div class="note-form" id="noteForm">
+                    <textarea class="note-textarea" id="noteInput" placeholder="输入你的学习笔记..."></textarea>
+                    <div class="note-form-actions">
+                        <button class="note-btn-save" onclick="saveNote()">💾 保存笔记</button>
+                        <button class="note-btn-cancel" onclick="cancelNoteEdit()">取消</button>
+                    </div>
+                </div>
+            `;
+
+            notesContent.innerHTML = html;
+        }
+
+        // 保存笔记
+        function saveNote() {
+            const noteInput = document.getElementById('noteInput');
+            const text = noteInput.value.trim();
+
+            if (!text) {
+                alert('请输入笔记内容');
+                return;
+            }
+
+            if (!notes[currentLesson]) {
+                notes[currentLesson] = [];
+            }
+
+            if (editingNoteId) {
+                // 编辑现有笔记
+                const note = notes[currentLesson].find(n => n.id === editingNoteId);
+                if (note) {
+                    note.text = text;
+                    note.timestamp = Date.now();
+                }
+                editingNoteId = null;
+            } else {
+                // 添加新笔记
+                notes[currentLesson].push({
+                    id: 'note-' + Date.now(),
+                    text: text,
+                    timestamp: Date.now()
+                });
+            }
+
+            saveNotes();
+            renderNotes();
+        }
+
+        // 编辑笔记
+        function editNote(noteId) {
+            const note = notes[currentLesson].find(n => n.id === noteId);
+            if (!note) return;
+
+            editingNoteId = noteId;
+            const noteInput = document.getElementById('noteInput');
+            noteInput.value = note.text;
+            noteInput.focus();
+        }
+
+        // 删除笔记
+        function deleteNote(noteId) {
+            if (!confirm('确定要删除这条笔记吗？')) return;
+
+            notes[currentLesson] = notes[currentLesson].filter(n => n.id !== noteId);
+            saveNotes();
+            renderNotes();
+        }
+
+        // 取消编辑
+        function cancelNoteEdit() {
+            editingNoteId = null;
+            const noteInput = document.getElementById('noteInput');
+            noteInput.value = '';
+        }
+
+        // 保存学习时间
+        function saveStudyTimes() {
+            localStorage.setItem('studyTimes', JSON.stringify(studyTimes));
+            localStorage.setItem('totalTimeSpent', totalTimeSpent.toString());
+        }
+
+        // 切换计时器
+        function toggleTimer() {
+            if (studyStartTime === null) {
+                // 开始计时
+                studyStartTime = Date.now();
+                updateTimerButton(true);
+                startTimerUpdate();
+            } else {
+                // 暂停计时并保存
+                stopStudyTimer();
+                updateTimerButton(false);
+                stopTimerUpdate();
+            }
+        }
+
+        // 更新计时按钮状态
+        function updateTimerButton(isRunning) {
+            const timerBtn = document.getElementById('timerBtn');
+            if (timerBtn) {
+                if (isRunning) {
+                    timerBtn.textContent = '⏸ 暂停';
+                    timerBtn.classList.add('active');
+                } else {
+                    timerBtn.textContent = '▶ 开始';
+                    timerBtn.classList.remove('active');
+                }
+            }
+        }
+
+        // 更新计时显示
+        let timerUpdateInterval = null;
+
+        function startTimerUpdate() {
+            stopTimerUpdate();
+            timerUpdateInterval = setInterval(updateTimerDisplay, 1000);
+            updateTimerDisplay();
+        }
+
+        function stopTimerUpdate() {
+            if (timerUpdateInterval) {
+                clearInterval(timerUpdateInterval);
+                timerUpdateInterval = null;
+            }
+        }
+
+        function updateTimerDisplay() {
+            const timerStatus = document.getElementById('timerStatus');
+            if (!timerStatus) return;
+
+            // 计算当前课程的总学习时间（已保存 + 当前会话）
+            let totalTime = studyTimes[currentLesson] || 0;
+            if (studyStartTime !== null) {
+                const currentSession = Math.floor((Date.now() - studyStartTime) / 1000);
+                totalTime += currentSession;
+            }
+
+            timerStatus.textContent = `总学习: ${formatTime(totalTime)}`;
+        }
+
+        // 开始计时
+        function startStudyTimer() {
+            if (studyStartTime === null) {
+                studyStartTime = Date.now();
+            }
+        }
+
+        // 停止计时并保存
+        function stopStudyTimer() {
+            if (studyStartTime !== null && currentLesson !== null) {
+                const elapsed = Math.floor((Date.now() - studyStartTime) / 1000);
+                if (elapsed > 0) {
+                    if (!studyTimes[currentLesson]) {
+                        studyTimes[currentLesson] = 0;
+                    }
+                    studyTimes[currentLesson] += elapsed;
+                    totalTimeSpent += elapsed;
+                    saveStudyTimes();
+                    updateTotalTime();
+                    renderSidebar(); // 更新显示
+                }
+                studyStartTime = null;
+            }
+        }
+
+        // 保存完成状态到 localStorage
+        function saveCompletedState() {
+            localStorage.setItem('completedLessons', JSON.stringify([...completedLessons]));
+        }
+
+        // 切换完成状态
+        function toggleComplete(id, event) {
+            event.stopPropagation();
+            if (completedLessons.has(id)) {
+                completedLessons.delete(id);
+            } else {
+                completedLessons.add(id);
+            }
+            saveCompletedState();
+            renderSidebar();
+            updateProgress();
+
+            if (currentLesson === id) {
+                updateContentHeader(id);
+            }
+        }
+
+        // 更新进度条
+        function updateProgress() {
+            const total = lessons.length;
+            const completed = completedLessons.size;
+            const percentage = Math.round((completed / total) * 100);
+
+            const progressBar = document.getElementById('progressBar');
+            const progressText = document.getElementById('progressText');
+
+            progressBar.style.width = percentage + '%';
+            progressBar.textContent = percentage + '%';
+
+            if (percentage === 0) {
+                progressText.textContent = '加油！开始你的学习之旅吧~ 💪';
+            } else if (percentage < 30) {
+                progressText.textContent = '不错的开始！继续保持！🌱';
+            } else if (percentage < 60) {
+                progressText.textContent = '已经完成了一半！加油！💪';
+            } else if (percentage < 100) {
+                progressText.textContent = '快要完成了！最后冲刺！🔥';
+            } else {
+                progressText.textContent = '🎉 恭喜！你已经完成了所有课程！太棒了！ 🎉';
+            }
+        }
+
+        // 更新内容标题栏
+        function updateContentHeader(id) {
+            const lesson = lessons.find(l => l.id === id);
+            if (!lesson) return;
+
+            const isCompleted = completedLessons.has(id);
+            const btnClass = isCompleted ? 'completed' : '';
+            const btnText = isCompleted ? '已完成' : '标记完成';
+
+            const isTimerRunning = studyStartTime !== null;
+            const timerBtnClass = isTimerRunning ? 'active' : '';
+            const timerBtnText = isTimerRunning ? '暂停计时' : '开始计时';
+
+            document.getElementById('contentHeader').innerHTML = `
+                <div class="content-left">
+                    <span class="content-emoji">${lesson.emoji}</span>
+                    <span class="content-title">${lesson.title}</span>
+                </div>
+                <div class="timer-controls">
+                    <span class="timer-status" id="timerStatus">总学习: ${formatTime(studyTimes[id] || 0)}</span>
+                    <button class="timer-btn ${timerBtnClass}" onclick="toggleTimer()" id="timerBtn">${timerBtnText}</button>
+                    <button class="mark-complete-btn ${btnClass}" onclick="toggleComplete('${id}', event)">${btnText}</button>
+                </div>
+            `;
+        }
+
+        // 简单 Markdown 解析
+        function parseMarkdown(md, lessonId) {
+            let html = md;
+            html = html.replace(/```(\w*)\n([\s\S]*?)```/g, '<pre><code>$2</code></pre>');
+            html = html.replace(/`([^`]+)`/g, '<code>$1</code>');
+            html = html.replace(/^#### (.*$)/gim, '<h4 id="heading-' + lessonId + '-3">$1</h4>');
+            html = html.replace(/^### (.*$)/gim, '<h3 id="heading-' + lessonId + '-2">$1</h3>');
+            html = html.replace(/^## (.*$)/gim, '<h2 id="heading-' + lessonId + '-1">$1</h2>');
+            html = html.replace(/^# (.*$)/gim, '<h1 id="heading-' + lessonId + '-0">$1</h1>');
+            html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+            html = html.replace(/\*([^*]+)\*/g, '<em>$1</em>');
+            html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank">$1</a>');
+            html = html.replace(/^\- (.*$)/gim, '<li>$1</li>');
+            html = html.replace(/^(\d+)\. (.*$)/gim, '<li>$2</li>');
+            html = html.replace(/(<li>.*<\/li>)/s, '<ul>$1</ul>');
+            html = html.replace(/\n\n/g, '</p><p>');
+            html = '<p>' + html + '</p>';
+            html = html.replace(/<p><h([1234])>/g, '<h$1>');
+            html = html.replace(/<\/h([1234])><\/p>/g, '</h$1>');
+            html = html.replace(/<p><pre>/g, '<pre>');
+            html = html.replace(/<\/pre><\/p>/g, '</pre>');
+            html = html.replace(/<p><ul>/g, '<ul>');
+            html = html.replace(/<\/ul><\/p>/g, '</ul>');
+            html = html.replace(/<p><\/p>/g, '');
+            return html;
+        }
+
+        // 高亮搜索关键词
+        function highlightSearchTerm(text, term) {
+            if (!term) return text;
+            const regex = new RegExp(`(${term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
+            return text.replace(regex, '<span class="search-highlight">$1</span>');
+        }
+
+        // 搜索功能
+        async function performSearch(query) {
+            const resultsContainer = document.getElementById('searchResults');
+
+            if (!query || query.length < 2) {
+                resultsContainer.innerHTML = '';
+                return;
+            }
+
+            resultsContainer.innerHTML = '<div class="search-loading">🔍 搜索中...</div>';
+
+            const results = [];
+            const queryLower = query.toLowerCase();
+
+            // 搜索课程标题
+            for (const lesson of lessons) {
+                if (lesson.title.toLowerCase().includes(queryLower)) {
+                    results.push({
+                        lesson: lesson,
+                        type: 'title',
+                        title: lesson.title,
+                        match: lesson.title
+                    });
+                }
+            }
+
+            // 搜索课程内容
+            for (const lesson of lessons) {
+                try {
+                    // 如果内容已缓存，使用缓存
+                    let content = lessonContents[lesson.id];
+
+                    if (!content) {
+                        const res = await fetch(lesson.file);
+                        content = await res.text();
+                        lessonContents[lesson.id] = content;
+                    }
+
+                    // 移除markdown标记进行搜索
+                    const plainText = content
+                        .replace(/```[\s\S]*?```/g, '')
+                        .replace(/`[^`]+`/g, '')
+                        .replace(/[#*_\[\]]/g, '')
+                        .replace(/\n+/g, ' ')
+                        .trim();
+
+                    if (plainText.toLowerCase().includes(queryLower)) {
+                        // 找到匹配位置周围的文本
+                        const index = plainText.toLowerCase().indexOf(queryLower);
+                        const start = Math.max(0, index - 30);
+                        const end = Math.min(plainText.length, index + query.length + 30);
+                        let snippet = plainText.substring(start, end);
+
+                        if (start > 0) snippet = '...' + snippet;
+                        if (end < plainText.length) snippet = snippet + '...';
+
+                        results.push({
+                            lesson: lesson,
+                            type: 'content',
+                            title: lesson.title,
+                            match: snippet
+                        });
+                    }
+                } catch (err) {
+                    console.error('Error loading lesson for search:', err);
+                }
+            }
+
+            // 显示搜索结果
+            if (results.length === 0) {
+                resultsContainer.innerHTML = '<div class="search-no-results">未找到匹配的内容 😕</div>';
+            } else {
+                resultsContainer.innerHTML = results.slice(0, 10).map(result => `
+                    <div class="search-result-item" onclick="loadLesson('${result.lesson.id}'); toggleSearch();">
+                        <div class="search-result-title">${highlightSearchTerm(result.title, query)}</div>
+                        <div class="search-result-lesson">${result.lesson.emoji} ${result.type === 'title' ? '标题匹配' : '内容匹配'}</div>
+                        ${result.type === 'content' ? `<div style="margin-top: 4px; font-size: 0.85rem; color: #666;">${highlightSearchTerm(result.match, query)}</div>` : ''}
+                    </div>
+                `).join('');
+            }
+        }
+
+        // 搜索输入事件
+        document.getElementById('searchInput').addEventListener('input', (e) => {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(() => {
+                performSearch(e.target.value.trim());
+            }, 300);
+        });
+
+        // 键盘快捷键
+        document.addEventListener('keydown', (e) => {
+            // Ctrl+K 或 / - 切换搜索面板
+            if ((e.ctrlKey && e.key === 'k') || e.key === '/') {
+                e.preventDefault();
+                toggleSearch();
+            }
+            // Ctrl+M - 切换笔记面板
+            if (e.ctrlKey && e.key === 'm') {
+                e.preventDefault();
+                toggleNotes();
+            }
+            // Ctrl+L - 切换目录面板
+            if (e.ctrlKey && e.key === 'l') {
+                e.preventDefault();
+                toggleTOC();
+            }
+            // Escape - 关闭所有面板
+            if (e.key === 'Escape') {
+                const searchPanel = document.getElementById('searchPanel');
+                const notesPanel = document.getElementById('notesPanel');
+                const tocPanel = document.getElementById('tocPanel');
+                if (searchPanel.classList.contains('show')) {
+                    toggleSearch();
+                } else if (notesPanel.classList.contains('show')) {
+                    toggleNotes();
+                } else if (tocPanel.classList.contains('show')) {
+                    toggleTOC();
+                }
+            }
+        });
+
+        // 点击外部关闭面板
+        document.addEventListener('click', (e) => {
+            const searchPanel = document.getElementById('searchPanel');
+            const searchBtn = document.getElementById('searchToggleBtn');
+            const notesPanel = document.getElementById('notesPanel');
+            const notesBtn = document.getElementById('notesToggleBtn');
+            const tocPanel = document.getElementById('tocPanel');
+            const tocBtn = document.getElementById('tocToggleBtn');
+
+            // 关闭搜索面板
+            if (searchPanel.classList.contains('show') &&
+                !searchPanel.contains(e.target) &&
+                !searchBtn.contains(e.target)) {
+                toggleSearch();
+            }
+
+            // 关闭笔记面板
+            if (notesPanel.classList.contains('show') &&
+                !notesPanel.contains(e.target) &&
+                !notesBtn.contains(e.target)) {
+                toggleNotes();
+            }
+
+            // 关闭目录面板
+            if (tocPanel.classList.contains('show') &&
+                !tocPanel.contains(e.target) &&
+                !tocBtn.contains(e.target)) {
+                toggleTOC();
+            }
+        });
+
+        // 加载课程内容
+        async function loadLesson(id) {
+            // 停止计时更新并保存之前的课程时间
+            stopTimerUpdate();
+            stopStudyTimer();
+
+            const lesson = lessons.find(l => l.id === id);
+            if (!lesson) return;
+
+            currentLesson = id;
+
+            // 移除之前的滚动监听
+            if (tocObserver) {
+                tocObserver.disconnect();
+            }
+
+            document.querySelectorAll('.lesson-item').forEach(el => el.classList.remove('active'));
+            const lessonItem = document.querySelector(`[data-id="${id}"]`);
+            if (lessonItem) {
+                lessonItem.classList.add('active');
+            }
+
+            updateContentHeader(id);
+            document.getElementById('contentBody').innerHTML = '<div class="loading">⏳ 加载中...</div>';
+            document.getElementById('tocPanel').classList.remove('show');
+
+            try {
+                if (loadedLessons.has(id)) {
+                    const cached = localStorage.getItem('lesson-' + id);
+                    if (cached) {
+                        document.getElementById('contentBody').innerHTML = cached;
+                        generateTOC(cached, id);
+                        // 添加滚动监听
+                        setTimeout(() => {
+                            observeContentScroll();
+                        }, 100);
+
+                        // 加载笔记
+                        renderNotes();
+
+                        return;
+                    }
+                }
+
+                console.log('Loading:', lesson.file);
+                const res = await fetch(lesson.file);
+                const md = await res.text();
+                const html = parseMarkdown(md, id);
+
+                document.getElementById('contentBody').innerHTML = html;
+                localStorage.setItem('lesson-' + id, html);
+                loadedLessons.add(id);
+                lessonContents[id] = md;
+
+                // 生成目录
+                generateTOC(html, id);
+
+                // 添加滚动监听
+                observeContentScroll();
+
+                // 加载笔记
+                renderNotes();
+            } catch (err) {
+                document.getElementById('contentBody').innerHTML = '<p style="color:red;text-align:center;padding:50px;">❌ 加载失败: ' + err.message + '</p>';
+                console.error(err);
+            }
+        }
+
+        // 监听内容滚动
+        function observeContentScroll() {
+            const contentBody = document.getElementById('contentBody');
+            if (!contentBody) return;
+
+            let ticking = false;
+            contentBody.addEventListener('scroll', () => {
+                if (!ticking) {
+                    window.requestAnimationFrame(() => {
+                        updateActiveTOC();
+                        ticking = false;
+                    });
+                    ticking = true;
+                }
+            });
+        }
+
+        // 渲染侧边栏
+        function renderSidebar() {
+            const day1 = lessons.slice(0, 6);
+            const day2 = lessons.slice(6);
+
+            const renderDay = (dayLessons, emoji, title) => `
+                <div class="day-section">
+                    <div class="day-header">
+                        <span class="day-emoji">${emoji}</span>
+                        <span class="day-title">${title}</span>
+                    </div>
+                    ${dayLessons.map(l => {
+                        const isCompleted = completedLessons.has(l.id);
+                        const time = studyTimes[l.id] || 0;
+                        return `
+                        <div class="lesson-item" data-id="${l.id}">
+                            <div class="lesson-header" onclick="loadLesson('${l.id}')">
+                                <span class="lesson-emoji">${l.emoji}</span>
+                                <span class="lesson-title">${l.title}</span>
+                                <div class="lesson-actions">
+                                    ${time > 0 ? `<span class="study-time">⏱ ${formatTime(time)}</span>` : ''}
+                                    <button class="complete-btn ${isCompleted ? 'completed' : ''}"
+                                            onclick="toggleComplete('${l.id}', event)"
+                                            title="${isCompleted ? '标记为未完成' : '标记为完成'}">
+                                        ${isCompleted ? '✓' : '○'}
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    `}).join('')}
+                </div>
+            `;
+
+            document.getElementById('lessonList').innerHTML = renderDay(day1, '🌅', 'Day 1: 基础功能') + renderDay(day2, '🚀', 'Day 2: 高级功能');
+        }
+
+        // 目录相关变量
+        let tocItems = [];
+        let tocObserver = null;
+
+        // 切换目录显示
+        function toggleTOC() {
+            const panel = document.getElementById('tocPanel');
+            const btn = document.getElementById('tocToggleBtn');
+            panel.classList.toggle('show');
+            btn.classList.toggle('active');
+        }
+
+        // 生成目录
+        function generateTOC(html, lessonId) {
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(html, 'text/html');
+            const headers = doc.querySelectorAll('h1, h2, h3, h4');
+
+            tocItems = [];
+            const tocContent = document.getElementById('tocContent');
+
+            if (headers.length === 0) {
+                tocContent.innerHTML = '<div style="padding: 15px; text-align: center; color: #999;">此课程无目录</div>';
+                return;
+            }
+
+            let tocHTML = '';
+            headers.forEach((header, index) => {
+                const level = parseInt(header.tagName.substring(1));
+                const text = header.textContent.trim();
+                const id = `heading-${lessonId}-${index}`;
+
+                tocItems.push({ id, level, element: header });
+
+                tocHTML += `
+                    <div class="toc-item toc-level-${Math.min(level, 3)}"
+                         data-id="${id}"
+                         data-level="${level}"
+                         onclick="scrollToHeading('${id}')">
+                        ${text}
+                    </div>
+                `;
+            });
+
+            tocContent.innerHTML = tocHTML;
+        }
+
+        // 滚动到标题
+        function scrollToHeading(id) {
+            const element = document.getElementById(id);
+            const contentBody = document.getElementById('contentBody');
+            if (element && contentBody) {
+                // 计算元素在容器中的位置
+                const topPos = element.offsetTop - 20;
+                contentBody.scrollTo({
+                    top: topPos,
+                    behavior: 'smooth'
+                });
+            }
+        }
+
+        // 更新激活的目录项
+        function updateActiveTOC() {
+            const contentBody = document.getElementById('contentBody');
+            if (!contentBody) return;
+
+            const scrollPosition = contentBody.scrollTop + 100;
+            let activeItem = null;
+
+            for (const item of tocItems) {
+                // 检查元素是否在当前内容中
+                const element = document.getElementById(item.id);
+                if (element && element.offsetParent !== null) {
+                    const elementTop = element.offsetTop;
+                    if (elementTop <= scrollPosition) {
+                        activeItem = item;
+                    } else {
+                        break;
+                    }
+                }
+            }
+
+            // 更新激活状态
+            document.querySelectorAll('.toc-item').forEach(el => {
+                el.classList.remove('active');
+            });
+            if (activeItem) {
+                const activeEl = document.querySelector(`.toc-item[data-id="${activeItem.id}"]`);
+                if (activeEl) {
+                    activeEl.classList.add('active');
+                    // 确保激活项可见
+                    activeEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                }
+            }
+        }
+
+        // 页面离开时保存学习时间
+        window.addEventListener('beforeunload', () => {
+            stopStudyTimer();
+        });
+
+        // 页面隐藏时暂停计时并保存
+        document.addEventListener('visibilitychange', () => {
+            if (document.hidden) {
+                // 仅在计时器运行时停止并保存
+                if (studyStartTime !== null) {
+                    stopStudyTimer();
+                    updateTimerButton(false);
+                    stopTimerUpdate();
+                }
+            }
+        });
+
+        // 初始化
+        loadCompletedState();
+        renderSidebar();
+    </script>
+</body>
+</html>
